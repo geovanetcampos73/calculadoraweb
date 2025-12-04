@@ -1,36 +1,35 @@
-# WORKFLOW CRIADO PARA O PROJETO CALCULADORAWEB
-
-name: calc_web
-
-# Controla quando o work flow irá ser executado
+name: CI/CD Pipeline
 on:
-  # dispara o fluxo de trabalho quando for executado um push ou uma ação de pull request somente para a branch master/main
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  # Permite você executar este worflow(action) manualmente na aba Actions
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+push:
+branches: [ main ]
+pull_request:
+branches: [ main ]
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+test:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout código
+uses: actions/checkout@v3
+- name: Configurar Node.js
+uses: actions/setup-node@v3
+with:
+node-version: 20
+- name: Instalar dependências
+run: npm install
+- name: Rodar testes
+run: node js/testes.js
+deploy:
+needs: test
+runs-on: ubuntu-latest
+if: github.ref == 'refs/heads/main'
+steps:
+- name: Checkout código
+uses: actions/checkout@v3
+- name: Configurar GitHub Pages
+uses: actions/configure-pages@v3
+- name: Fazer upload dos arquivos
+uses: actions/upload-pages-artifact@v2
+with:
+path: .
+- name: Deploy para GitHub Pages
+uses: actions/deploy-pages@v2
